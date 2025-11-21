@@ -1,28 +1,35 @@
 <template>
   <div class="card">
-    <img :src="image" class="card-img" />
+    <img :src="imageUrl" class="cat-img" />
+
     <h3>{{ title }}</h3>
     <p>{{ items }} items</p>
   </div>
 </template>
 
 <script setup>
-defineProps({
+const props = defineProps({
   title: String,
   items: Number,
-  image: String,
+  image: String, // backend path like "uploads/category/...png"
 })
+
+// Convert backend path → full URL
+const imageUrl = `http://localhost:3000/${props.image}`
 </script>
 
 <style scoped>
 .card {
-  width: 150px;
-  padding: 15px;
+  background: #f9f6ef;
+  padding: 20px;
   border-radius: 12px;
-  background: #f8f6f3;
+  width: 150px;
   text-align: center;
 }
-.card-img {
+
+.cat-img {
   width: 90px;
+  height: 90px;
+  object-fit: contain;
 }
 </style>

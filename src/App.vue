@@ -1,46 +1,50 @@
 <script setup>
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
+
 import CategoryCard from '@/components/CategoryCard.vue'
 import PromotionCard from '@/components/PromotionCard.vue'
 
-// Import images from img folder
-import cakeMilk from '@/components/img/burger.png'
-import peach from '@/components/img/peach.png'
-import kiwi from '@/components/img/kiwi.png'
-import apple from '@/components/img/apple.png'
-import snack from '@/components/img/snack.png'
-import blackPlum from '@/components/img/black_plum.png'
-import vegetables from '@/components/img/vegetables.jpg'
-import headphone from '@/components/img/headphone.png'
-import cakeMilk2 from '@/components/img/milk.png'
-import orange from '@/components/img/orange.png'
+const categories = ref([])
+const promotions = ref([])
 
-// Promotion images
-import onion from '@/components/img/onion.jpg'
-import juice from '@/components/img/milk.png'
-import veggiesPromo from '@/components/img/vegetables.jpg'
+async function fetchCategories() {
+  const res = await axios.get('http://localhost:3000/api/categories')
+  categories.value = res.data
+}
+
+async function fetchPromotions() {
+  const res = await axios.get('http://localhost:3000/api/promotions')
+  promotions.value = res.data
+}
+
+onMounted(() => {
+  fetchCategories()
+  fetchPromotions()
+})
 </script>
 
 <template>
+  <!-- CATEGORY LIST -->
   <div class="category-row">
-    <CategoryCard title="Burger" :items="14" :image="cakeMilk" />
-    <CategoryCard title="Peach" :items="17" :image="peach" />
-    <CategoryCard title="Organic Kiwi" :items="21" :image="kiwi" />
-    <CategoryCard title="Red Apple" :items="68" :image="apple" />
-    <CategoryCard title="Snack" :items="34" :image="snack" />
-    <CategoryCard title="Black Plum" :items="25" :image="blackPlum" />
-    <CategoryCard title="Vegetables" :items="65" :image="vegetables" />
-    <CategoryCard title="Headphone" :items="33" :image="headphone" />
-    <CategoryCard title="Cake & Milk" :items="54" :image="cakeMilk2" />
-    <CategoryCard title="Orange" :items="63" :image="orange" />
+    <CategoryCard
+      v-for="cat in categories"
+      :key="cat.id"
+      :title="cat.name"
+      :items="cat.productCount"
+      :image="cat.image"
+    />
   </div>
 
-  <!-- ⭐ NEW: Promotion Section ⭐ -->
+  <!-- PROMOTION LIST -->
   <div class="promo-row">
-    <PromotionCard title="Everyday Fresh & Clean with Our Products" :image="onion" bg="#f2f0d8" />
-
-    <PromotionCard title="Make your Breakfast Healthy and Easy" :image="juice" bg="#f7e7e3" />
-
-    <PromotionCard title="The best Organic Products Online" :image="veggiesPromo" bg="#e0e8f4" />
+    <PromotionCard
+      v-for="promo in promotions"
+      :key="promo.id"
+      :title="promo.title"
+      :image="promo.image"
+      :bg="promo.color"
+    />
   </div>
 </template>
 

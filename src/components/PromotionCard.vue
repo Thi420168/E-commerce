@@ -2,19 +2,27 @@
   <div class="promo-card" :style="{ backgroundColor: bg }">
     <div class="text-box">
       <h2>{{ title }}</h2>
-      <button class="shop-btn">Shop Now →</button>
+      <button class="shop-btn" @click="shopNow">Shop Now →</button>
     </div>
 
-    <img :src="image" class="promo-img" />
+    <img :src="imageUrl" class="promo-img" />
   </div>
 </template>
 
 <script setup>
-defineProps({
+import { defineProps } from 'vue'
+
+const props = defineProps({
   title: String,
   image: String,
   bg: String,
 })
+
+const imageUrl = `http://localhost:3000/${props.image}`
+
+function shopNow() {
+  alert("Let's shop: " + props.title)
+}
 </script>
 
 <style scoped>
