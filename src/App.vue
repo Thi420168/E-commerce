@@ -1,60 +1,56 @@
-<script>
-import axios from 'axios'
-import Category from './components/Category.vue'
-import Promotion from './components/Promotion.vue'
+<script setup lang="ts">
+import { onMounted, computed } from 'vue'
+import { useProductStore } from '@/stores/product'
 
-export default {
-  components: { Category, Promotion },
+// COMPONENTS
+import Product from '@/components/Products.vue' // your Product.vue
+import Category from '@/components/Category.vue'
+import Promotion from '@/components/Promotion.vue'
+import MenuComponent from '@/components/MenuComponent.vue'
+import BigProduct from '@/components/BigProduct.vue'
 
-  data() {
-    return {
-      categories: [],
-      promotions: [],
-    }
-  },
+// STORE
+const store = useProductStore()
 
-  methods: {
-    // Convert backend image path (uploads\promotion\file.png → http://localhost:3000/uploads/promotion/file.png)
-    fixImage(path) {
-      return 'http://localhost:3000/' + path.replace(/\\/g, '/')
-    },
+// MENU LIST
+const menuList = [
+  'All',
+  'Milks & Dairies',
+  'Coffees & Teas',
+  'Pet Foods',
+  'Meats',
+  'Vegetables',
+  'Fruits',
+]
 
-    shopNow(promotion) {
-      alert("Let's shop: " + promotion.title)
-    },
+// ⭐ FIX IMAGE FUNCTION
+function fixImage(img: string | string[]) {
+  if (!img) return ''
 
-    async fetchCategories() {
-      try {
-        const res = await axios.get('http://localhost:3000/api/categories')
-        this.categories = res.data
-      } catch (err) {
-        console.error('Error loading categories:', err)
-      }
-    },
+  // Backend returns ["uploads\\product\\xxx.jpg"]
+  const path = Array.isArray(img) ? img[0] : img
 
-    async fetchPromotions() {
-      try {
-        const res = await axios.get('http://localhost:3000/api/promotions')
-        this.promotions = res.data
-      } catch (err) {
-        console.error('Error loading promotions:', err)
-      }
-    },
-  },
-
-  mounted() {
-    this.fetchCategories()
-    this.fetchPromotions()
-  },
+  return 'http://localhost:3000/' + path.replace(/\\/g, '/')
 }
+
+// COMPUTED — POPULAR PRODUCTS
+const popularProducts = computed(() => store.getPopularProducts)
+
+// LOAD DATA ON START
+onMounted(() => {
+  store.loadAll()
+})
 </script>
 
 <template>
   <div class="page">
-    <!-- CATEGORY LIST -->
+    <!-- FEATURED CATEGORIES -->
+    <h2 class="section-title">Featured Categories</h2>
+    <MenuComponent :items="menuList" />
+
     <div class="category-grid">
       <Category
-        v-for="cat in categories"
+        v-for="cat in store.categories"
         :key="cat.id"
         :title="cat.name"
         :items="cat.productCount"
@@ -65,16 +61,38 @@ export default {
 
     <div class="section-space"></div>
 
-    <!-- PROMOTION LIST -->
+    <!-- PROMOTIONS -->
+    <MenuComponent :items="menuList" />
+
     <div class="promo-row">
       <Promotion
-        v-for="pro in promotions"
+        v-for="pro in store.promotions"
         :key="pro.id"
         :title="pro.title"
         :imageSrc="fixImage(pro.image)"
         :bgColor="pro.color"
         :buttonColor="pro.buttonColor"
-        @click="shopNow(pro)"
+      />
+    </div>
+
+    <div class="section-space"></div>
+
+    <!-- POPULAR PRODUCTS -->
+    <h2 class="section-title">Popular Products</h2>
+    <MenuComponent :items="menuList" />
+
+    <div class="product-grid">
+      <Product
+        v-for="p in popularProducts"
+        :key="p.id"
+        :title="p.name"
+        :description="p.description"
+        :rating="p.rating"
+        :size="p.size"
+        :price="p.price"
+        :oldPrice="p.oldPrice"
+        :badge="p.badge"
+        :image="fixImage(p.image)"
       />
     </div>
   </div>
@@ -88,6 +106,13 @@ export default {
   padding: 40px 15px;
 }
 
+.section-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+/* CATEGORY GRID */
 .category-grid {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
@@ -99,9 +124,18 @@ export default {
   height: 40px;
 }
 
+/* PROMO GRID */
 .promo-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 25px;
+}
+
+/* PRODUCT GRID */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 25px;
+  margin-top: 25px;
 }
 </style>
